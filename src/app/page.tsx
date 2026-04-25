@@ -24,8 +24,8 @@ export default function Home() {
               <a href="#papers" className="primary-link">
                 Browse papers
               </a>
-              <Link href="/papers/kv-cache-compression" className="secondary-link">
-                Open starter essay
+              <Link href="/papers/pi0-vla-flow" className="secondary-link">
+                Open π0 paper
               </Link>
             </div>
           </section>
