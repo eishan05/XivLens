@@ -1,9 +1,10 @@
 import { pi0VlaFlow } from "./pi0-vla-flow";
+import { pi05OpenWorld } from "./pi05-open-world";
 import { fastActionTokenization } from "./fast-action-tokenization";
 import { hiRobot } from "./hi-robot";
 import type { PaperModule } from "./types";
 
-export const papers: PaperModule[] = [fastActionTokenization, hiRobot, pi0VlaFlow];
+export const papers: PaperModule[] = [fastActionTokenization, hiRobot, pi05OpenWorld, pi0VlaFlow];
 
 export function getAllPapers() {
   return [...papers].sort((a, b) => a.meta.title.localeCompare(b.meta.title));
