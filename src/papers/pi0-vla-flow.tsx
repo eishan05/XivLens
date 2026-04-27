@@ -6,10 +6,11 @@ import type { PaperModule, PaperSection } from "./types";
 
 const meta = {
   slug: "pi0-vla-flow",
-  title: "π0: VLA Flow Model",
-  subtitle: "A PaliGemma VLM becomes a generalist robot policy through an action expert, robot-scale data, and flow-matched action chunks.",
+  title: "π0: Vision-Language-Action Flow Model",
+  subtitle:
+    "PaliGemma, a pretrained vision-language model (VLM), becomes a vision-language-action (VLA) robot policy through an action expert, robot-scale data, and flow matching, a way to turn noise into action chunks.",
   abstract:
-    "A thorough read of π0, the Physical Intelligence model that combines Internet-scale VLM pretraining with cross-embodiment robot data and continuous flow-matching control.",
+    "A thorough read of π0, the Physical Intelligence model that combines Internet-scale image-language pretraining with cross-embodiment robot data and continuous noise-to-action control.",
   authors: [
     "Kevin Black",
     "Noah Brown",
@@ -63,11 +64,13 @@ function Pi0Essay() {
         title="π0 is a robot foundation-model recipe, not just a bigger policy."
         aside={
           <PullNote label="Reading frame" tone="cool">
-            The paper makes its claim through the combination: Internet-scale VLM initialization, cross-embodiment robot
-            pretraining, and continuous action generation for high-frequency control.
+            The paper makes its claim through the combination: Internet-scale image-language initialization,
+            cross-embodiment robot pretraining, and continuous action generation for high-frequency control.
           </PullNote>
         }
       >
+        <Pi0TermPrimer />
+        <Pi0TeachingFrame />
         <ThesisTriptych />
         <StepList
           items={[
@@ -98,7 +101,10 @@ function Pi0Essay() {
             <MathInline ariaLabel="o t equals images language and q t">
               {"o_t=[I_t^1,\\ldots,I_t^n,\\ell_t,q_t]"}
             </MathInline>
-            .
+            . Here <MathInline>{"I_t^k"}</MathInline> is camera image <MathInline>{"k"}</MathInline> at time{" "}
+            <MathInline>{"t"}</MathInline>, <MathInline>{"\\ell_t"}</MathInline> is the language instruction, and{" "}
+            <MathInline>{"q_t"}</MathInline> is proprioception: the robot&apos;s internal state, such as joint
+            positions.
           </PullNote>
         }
       >
@@ -117,7 +123,8 @@ function Pi0Essay() {
               left: "Missing image slots are masked; smaller robots are padded into the shared action space.",
               right: (
                 <>
-                  <MathInline>{"H=50"}</MathInline> action tokens, one per future timestep.
+                  <MathInline>{"H=50"}</MathInline> means the chunk has 50 future action tokens, one per future
+                  timestep.
                 </>
               )
             },
@@ -176,7 +183,7 @@ function Pi0Essay() {
           stages={[
             {
               label: "Corrupt",
-              body: "During training, the true action chunk is mixed with Gaussian noise at flow timestep tau."
+              body: "During training, the true action chunk is mixed with Gaussian noise, random values from a bell-shaped distribution, at flow timestep tau, a number that runs from 0 for pure noise to 1 for the real chunk."
             },
             {
               label: "Predict",
@@ -184,7 +191,7 @@ function Pi0Essay() {
             },
             {
               label: "Integrate",
-              body: "At inference, Euler integration runs 10 steps from random noise to the final action chunk."
+              body: "At inference, Euler integration, a repeated small-step update, runs 10 steps from random noise to the final action chunk."
             }
           ]}
         />
@@ -277,6 +284,82 @@ function Pi0Essay() {
   );
 }
 
+function Pi0TeachingFrame() {
+  const items = [
+    {
+      label: "Problem",
+      body: "Robot policies are usually narrow: a model trained for one robot, camera setup, or task often fails when any of those change."
+    },
+    {
+      label: "Assumption",
+      body: "Image-language pretraining can supply object and instruction knowledge, but control still needs real robot data and a continuous action model."
+    },
+    {
+      label: "Method",
+      body: "Keep PaliGemma for perception and language, add a robot-specific action expert, and train the combined model on many robot demonstrations."
+    },
+    {
+      label: "Result",
+      body: "The reported model transfers better than smaller or less pretrained baselines, then improves further with task-specific post-training."
+    },
+    {
+      label: "Why it matters",
+      body: "The paper is evidence for a scaling recipe: semantics, robot data, and continuous action generation help each other when trained together."
+    }
+  ];
+
+  return (
+    <div className="teaching-frame" aria-label="First-principles teaching frame">
+      {items.map((item) => (
+        <div className="teaching-card" key={item.label}>
+          <span>{item.label}</span>
+          <p>{item.body}</p>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function Pi0TermPrimer() {
+  const terms = [
+    {
+      term: "VLM",
+      body: "A vision-language model: a neural network trained to connect images and text. By itself, it does not output robot motor commands."
+    },
+    {
+      term: "VLA",
+      body: "A vision-language-action model: a policy that reads images and language, then produces robot actions."
+    },
+    {
+      term: "Embodiment",
+      body: "The physical robot body and control interface, such as one arm, two arms, a mobile base, joint control, or gripper control."
+    },
+    {
+      term: "Action chunk",
+      body: "A short planned sequence of future low-level commands. π0 predicts 50 future commands at a time instead of only the next command."
+    },
+    {
+      term: "Flow matching",
+      body: "A training method that teaches a model which direction to move a noisy sample so it becomes a real data sample."
+    },
+    {
+      term: "Vector field",
+      body: "A rule that assigns a direction to every point. Here, each direction says how to move a noisy action chunk toward an executable one."
+    }
+  ];
+
+  return (
+    <div className="term-primer" aria-label="Key terms for pi0">
+      {terms.map((item) => (
+        <div className="term-card" key={item.term}>
+          <span>{item.term}</span>
+          <p>{item.body}</p>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 function ThesisTriptych() {
   const items = [
     {
@@ -333,8 +416,8 @@ function TokenRouteDiagram() {
         </span>
       ))}
       <em>
-        <MathInline>{"\\tau"}</MathInline> is embedded into every noisy action token through an MLP; it is not a
-        standalone token.
+        <MathInline>{"\\tau"}</MathInline> is embedded into every noisy action token through an MLP, a small
+        feed-forward network; it is not a standalone token.
       </em>
     </div>
   );
@@ -358,12 +441,15 @@ function Pi0ArchitectureDiagram() {
         <div>
           <LabelPill>pretrained</LabelPill>
           <strong>VLM backbone</strong>
-          <p>PaliGemma processes image-language tokens and keeps distribution shift low by not attending to robot suffixes.</p>
+          <p>PaliGemma processes image-language tokens and keeps its inputs close to what it saw during pretraining.</p>
         </div>
         <div>
           <LabelPill>new expert</LabelPill>
           <strong>Action expert</strong>
-          <p>Separate Gemma-style weights process state and noisy action tokens, while self-attention lets both experts interact.</p>
+          <p>
+            Separate Gemma-style weights process state and noisy action tokens, while self-attention, the transformer
+            step where tokens exchange information, lets both experts interact.
+          </p>
         </div>
       </div>
       <AttentionMaskDiagram />
@@ -443,21 +529,37 @@ function FlowEquationPanel() {
         <strong>
           <MathInline>{"A_t^{\\tau}=\\tau A_t+(1-\\tau)\\epsilon"}</MathInline>
         </strong>
-        <p>Sample noise, mix it with the target action chunk, and ask the model for the denoising direction.</p>
+        <p>
+          <MathInline>{"A_t"}</MathInline> is the real action chunk starting at time <MathInline>{"t"}</MathInline>,{" "}
+          <MathInline>{"\\epsilon"}</MathInline> is random Gaussian noise, and <MathInline>{"\\tau"}</MathInline> is
+          the flow time from 0 to 1. The equation says: make a training example by blending noise with the real
+          action chunk, so the model sees every stage between them.
+        </p>
       </div>
       <div>
         <span>target field</span>
         <strong>
           <MathInline>{"u(A_t^{\\tau}|A_t)=A_t-\\epsilon"}</MathInline>
         </strong>
-        <p>The supervised target is the vector that moves from the noisy point toward the real action chunk.</p>
+        <p>
+          <MathInline>{"u"}</MathInline> is the target vector field, meaning the direction the model should learn at
+          the noisy point <MathInline>{"A_t^{\\tau}"}</MathInline>. The equation says: the correct direction is the
+          straight-line move from the sampled noise <MathInline>{"\\epsilon"}</MathInline> toward the real action
+          chunk <MathInline>{"A_t"}</MathInline>.
+        </p>
       </div>
       <div>
         <span>inference step</span>
         <strong>
           <MathInline>{"A_t^{\\tau+\\delta}=A_t^{\\tau}+\\delta v_{\\theta}(A_t^{\\tau},o_t)"}</MathInline>
         </strong>
-        <p>With <MathInline>{"\\delta=0.1"}</MathInline>, the paper uses 10 Euler updates per generated chunk.</p>
+        <p>
+          <MathInline>{"v_{\\theta}"}</MathInline> is the model&apos;s predicted direction,{" "}
+          <MathInline>{"\\theta"}</MathInline> means its learned weights, <MathInline>{"o_t"}</MathInline> is the
+          observation, and <MathInline>{"\\delta"}</MathInline> is the step size. The equation says: start from the
+          current noisy chunk, move a small distance in the predicted direction, and repeat. With{" "}
+          <MathInline>{"\\delta=0.1"}</MathInline>, the paper uses 10 Euler updates per generated chunk.
+        </p>
       </div>
     </div>
   );
